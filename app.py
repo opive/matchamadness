@@ -9,6 +9,7 @@ checking = False
 last_status = "Not checked yet"
 
 URL = "https://global.tokichi.jp/products/mc2" # ex. I want fuji no shiro really badly
+WEBHOOK_URL = "https://discordapp.com/api/webhooks/1423323990172241991/_b7MceMZCOfpGSUQdxtNxa3cJeyp5Zn1W66l_UmXdwxAzdIglYVJXep49BxA36scr1OD"
 
 def check_stock():
     response = requests.get(URL)
@@ -28,14 +29,11 @@ def check_stock():
 
     return False  # default treat as out of stock
 
-def send_email():
-    MSG = MIMEText("The item is back in stock! " + URL)
-    MSG['Subject'] = "Item Back In Stock!"
-    MSG['From'] = "olivetree196@gmail.com"
-    MSG['To'] = "oliviaspotify176@gmail.com"
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-        server.login("your_email@example.com", "your_app_password")
-        server.sendmail(MSG["From"], [MSG["To"]], MSG.as_string())
+def send_message():
+    payload = {"content": "Matcha is back in stock!"} #discord webhook expects JSON data with a key called content
+    response = requests.post(WEBHOOK_URL, json=payload)
+    print("Sent to discord:", response.status_code)
+
 
 
 def background_check():
@@ -44,12 +42,19 @@ def background_check():
         stock = check_stock()
         if stock:
             last_status = "In Stock!"
-            send_email()
+            send_message()
             checking = False  # stop checking after sending email
         else:
             last_status = "Out of Stock"
-    time.sleep(random.randint(600, 2400))  # wait between 10 to 40 minutes
+        time.sleep(random.randint(600, 2400))  # wait between 10 to 40 minutes to avoid being blocked
 
 @app.route('/')
 def index():
-    return "Hello, World!"
+    return render_template('index.html', checking=checking, last_status=last_status)
+
+
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
