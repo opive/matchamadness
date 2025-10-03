@@ -30,9 +30,9 @@ def check_stock():
     return False  # default treat as out of stock
 
 def send_message():
-    payload = {"content": "Matcha is back in stock!"} #discord webhook expects JSON data with a key called content
+    payload = {"content": f"Matcha is back in stock! {URL}"} #discord webhook expects JSON data with a key called content
     response = requests.post(WEBHOOK_URL, json=payload)
-    print("Sent to discord:", response.status_code)
+    print("Sent to discord:", response.status_code) 
 
 
 
@@ -56,5 +56,7 @@ def index():
 
 
 if __name__ == "__main__":
+    checking = True
+    threading.Thread(target=background_check, daemon=True).start()
     app.run(debug=True)
 
